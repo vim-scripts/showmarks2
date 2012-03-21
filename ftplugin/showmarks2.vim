@@ -1,4 +1,7 @@
 " ==============================================================================
+" 4-21-12: fixed cursor jumping after marking using 'm'
+" 			extended ShowMarks function to outside, for the reason below
+" 			added example of auto session+marks loading/saving
 " 4-21-12: moved (activated) <F2> key mapping.
 " 			made the marker tag shorter by '>'
 "
@@ -15,6 +18,7 @@
 " Functions:
 "		ShowMarksToggle: Toggles a bookmark at the cursor line
 "		ShowMarksClearAll: Clears all bookmarks
+"		ShowMarks: To show the bookmarks, for initial loading
 "       
 " ==============================================================================
 
@@ -40,26 +44,15 @@ let s:all_marks = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 " Commands
 command! -nargs=0 -bar ShowMarksClearAll  call s:ShowMarksClearAll()
 command! -nargs=0 -bar ShowMarksToggle call s:ShowMarksToggle()
+command! -nargs=0 -bar ShowMarks call s:_ShowMarks()
 
 noremap <unique> <script> \sm m
-"noremap <silent> m :exe 'norm \sm'.nr2char(getchar())<bar>call <sid>ShowMarks()<CR>
-noremap <silent> m :exe <sid>_ShowMarksPlaceMark()<CR>
+noremap <silent> m :let curline=line(".")<bar>call <sid>_ShowMarksPlaceMark()<bar>call setpos(".", curline)<CR>
 
-
-" AutoCommands: Only if ShowMarks is enabled
-"    aug ShowMarks
-"	au!
-"	autocmd CursorHold * call s:ShowMarks()
-"    aug END
 
 " Highlighting: Setup some nice colours to show the mark positions.
 hi default BookmarkCol ctermfg=blue ctermbg=lightblue cterm=bold guifg=DarkBlue guibg=#d0d0ff gui=bold
 
-" Function: IncludeMarks()
-" Description: This function returns the list of marks (in priority order) to
-" show in this buffer.  Each buffer, if not already set, inherits the global
-" setting; if the global include marks have not been set; that is set to the
-" default value.
 fun! s:IncludeMarks()
 	if exists('b:showmarks_include') && exists('b:showmarks_previous_include') && b:showmarks_include != b:showmarks_previous_include
 		" The user changed the marks to include; hide all marks; change the
@@ -250,7 +243,7 @@ fun! s:_ShowMarksPlaceMark()
 		if c =~# '[a-zA-Z]' && ln == line("'".c)
 			" Have we already placed a mark here in this call to ShowMarks?
 			echohl WarningMsg
-			echo 'You have mark there, already'
+			echo 'You have a mark there, already'
 			echohl None
 			return
 		endif
@@ -318,6 +311,7 @@ fun! s:ShowMarksToggle()
 endf
 
 
+" -----------------------------------------------------------------------------
 
 "goto previous lowercase mark
 :map <F2> ]` 
@@ -333,4 +327,38 @@ endf
 
 " -----------------------------------------------------------------------------
 finish
+
+" I have this part in _vimrc
+" F12 saves session, double click on "_session.vis" reloads session
+" those are saved in the directory-of-the-current-buffer
+" loading blank doc may pose error for the first time
+"
+" In order to load session at double click (I am using Win XP):
+" DOS> assoc .vis=vimsession
+" DOS> ftype vimsession="C:\Program Files\Vim\vim72\gvim.exe" -S "%1"
+"
+function! _SaveSession()
+	execute "mksession! _session.vis"
+	execute "wviminfo! _viminfo.vim"
+endfunction
+command! -nargs=0 SaveSession :call _SaveSession()
+
+
+function! _RecallSession()
+	execute "rviminfo _viminfo.vim"
+	execute "ShowMarks"
+endfunction
+command! -nargs=0 RecallSession :call _RecallSession()
+
+aug RecallSession
+au!
+autocmd VimEnter * :RecallSession
+aug END
+
+aug SaveSession
+au!
+autocmd VimLeave * :SaveSession
+aug END
+
+:map <F12> :execute "SaveSession"<CR>
 
