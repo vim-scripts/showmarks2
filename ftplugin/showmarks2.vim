@@ -1,4 +1,7 @@
 " ==============================================================================
+" 4-21-12: moved (activated) <F2> key mapping.
+" 			made the marker tag shorter by '>'
+"
 " This is definitely a copy of sowmarks.vim, modified, crude
 "  For now, it works similar to MS utilities
 "
@@ -108,7 +111,7 @@ fun! s:_ShowMarksSetup()
 	while n < s:maxmarks
 		let c = strpart(s:all_marks, n, 1)
 		let nm = s:_NameOfMark(c)
-		let text = '>'.c
+		let text = c
 		let lhltext = ''
 			let s:ShowMarksDLink{nm} = 'BookmarkCol'
 			let lhltext = 'linehl='.s:ShowMarksDLink{nm}.nm
@@ -316,10 +319,6 @@ endf
 
 
 
-
-" -----------------------------------------------------------------------------
-finish
-
 "goto previous lowercase mark
 :map <F2> ]` 
 
@@ -330,4 +329,8 @@ finish
 
 "clear all marks
 :map <C-S-F2> :execute "ShowMarksClearAll"<CR>
+
+
+" -----------------------------------------------------------------------------
+finish
 
