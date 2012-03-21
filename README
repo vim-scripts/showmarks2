@@ -1,0 +1,12 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=3974
+
+^F2: toggle a bookmark at cursor
+F2: goto next bookmark
+shift-F2:goto previous bookmark
+^shift-F2: clear all bookmark
+the rest: the same as before
+
+copied from showmarks.vim, and then changed.
+I am a week old with vim. The status is crude, but works fine (Windows).
+
+Thanks for reading!
