@@ -1,4 +1,8 @@
 " ==============================================================================
+" 4-22-12: fixed the highlight disappearing after auto loading info
+" 			enabled autoloading/autosaving; See the comment about how to setup
+" 			this on WinXP
+" 			added/changed F12; "SaveSessionAs()"
 " 4-21-12: fixed cursor jumping after marking using 'm'
 " 			extended ShowMarks function to outside, for the reason below
 " 			added example of auto session+marks loading/saving
@@ -47,10 +51,11 @@ command! -nargs=0 -bar ShowMarksToggle call s:ShowMarksToggle()
 command! -nargs=0 -bar ShowMarks call s:_ShowMarks()
 
 noremap <unique> <script> \sm m
-noremap <silent> m :let curline=line(".")<bar>call <sid>_ShowMarksPlaceMark()<bar>call setpos(".", curline)<CR>
+noremap <silent> m :let ShowMarks_curline=line(".")<bar>call <sid>_ShowMarksPlaceMark()<bar>call setpos(".", ShowMarks_curline)<CR>
 
 
 " Highlighting: Setup some nice colours to show the mark positions.
+" Another might be in the _RecallSession(), take a look
 hi default BookmarkCol ctermfg=blue ctermbg=lightblue cterm=bold guifg=DarkBlue guibg=#d0d0ff gui=bold
 
 fun! s:IncludeMarks()
@@ -142,10 +147,10 @@ fun! s:_ShowMarks()
 			" Have we already placed a mark here in this call to ShowMarks?
 			if exists('mark_at'.ln)
 				" Already placed a mark, set the highlight to multiple
-				"if c =~# '[a-zA-Z]' && b:ShowMarksLink{mark_at{ln}} != 'BookmarkCol'
-				"	let b:ShowMarksLink{mark_at{ln}} = 'BookmarkCol'
-				"	exe 'hi link '.s:ShowMarksDLink{mark_at{ln}}.mark_at{ln}.' '.b:ShowMarksLink{mark_at{ln}}
-				"endif
+				if c =~# '[a-zA-Z]' && b:ShowMarksLink{mark_at{ln}} != 'BookmarkCol'
+					let b:ShowMarksLink{mark_at{ln}} = 'BookmarkCol'
+					exe 'hi link '.s:ShowMarksDLink{mark_at{ln}}.mark_at{ln}.' '.b:ShowMarksLink{mark_at{ln}}
+				endif
 			else
 				if !exists('b:ShowMarksLink'.nm) || b:ShowMarksLink{nm} != s:ShowMarksDLink{nm}
 					let b:ShowMarksLink{nm} = s:ShowMarksDLink{nm}
@@ -326,7 +331,7 @@ endf
 
 
 " -----------------------------------------------------------------------------
-finish
+"finish
 
 " I have this part in _vimrc
 " F12 saves session, double click on "_session.vis" reloads session
@@ -337,6 +342,15 @@ finish
 " DOS> assoc .vis=vimsession
 " DOS> ftype vimsession="C:\Program Files\Vim\vim72\gvim.exe" -S "%1"
 "
+"
+
+function! _SaveSessionAs()
+	let svpath = input('Path and name to save .vis: ')
+	execute 'mksession!' . svpath . ".vis"
+endfunction
+command! -nargs=0 SaveSessionAs :call _SaveSessionAs()
+
+
 function! _SaveSession()
 	execute "mksession! _session.vis"
 	execute "wviminfo! _viminfo.vim"
@@ -347,6 +361,7 @@ command! -nargs=0 SaveSession :call _SaveSession()
 function! _RecallSession()
 	execute "rviminfo _viminfo.vim"
 	execute "ShowMarks"
+	hi default BookmarkCol ctermfg=blue ctermbg=lightblue cterm=bold guifg=DarkBlue guibg=#d0d0ff gui=bold
 endfunction
 command! -nargs=0 RecallSession :call _RecallSession()
 
@@ -360,5 +375,7 @@ au!
 autocmd VimLeave * :SaveSession
 aug END
 
-:map <F12> :execute "SaveSession"<CR>
+:map <F12> :execute "SaveSessionAs"<CR>
+" -----------------------------------------------------------------------------
+finish
 
