@@ -1,4 +1,7 @@
 " ==============================================================================
+" 4-26-12: tested on Ubuntu
+" 			added autochdir
+" 			added <F11>; "SaveSession()"
 " 4-22-12: fixed the highlight disappearing after auto loading info
 " 			enabled autoloading/autosaving; See the comment about how to setup
 " 			this on WinXP
@@ -344,6 +347,11 @@ endf
 "
 "
 
+set autochdir
+"autocmd BufEnter * silent! lcd %:p:h
+"autocmd BufEnter * lcd %:p:h
+
+
 function! _SaveSessionAs()
 	let svpath = input('Path and name to save .vis: ')
 	execute 'mksession!' . svpath . ".vis"
@@ -375,6 +383,7 @@ au!
 autocmd VimLeave * :SaveSession
 aug END
 
+:map <F11> :execute "SaveSession"<CR>
 :map <F12> :execute "SaveSessionAs"<CR>
 " -----------------------------------------------------------------------------
 finish
